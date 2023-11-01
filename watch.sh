@@ -3,9 +3,9 @@
 # Exit if no argument has been supplied.
 if [ $# -eq 0 ]; then
 cat <<< EOF
-No command supplied. Run script like this
+No command supplied. Run the script like this
   script.sh COMMAND
-where COMMAND is one of start, stop or check-config.
+where COMMAND is one of start, stop, or check-config.
 EOF
 exit 1
 fi
@@ -97,13 +97,16 @@ if [[ "$COMMAND" == "start" ]]; then
     printf -v joined '%s,' "${events[@]}"
     eventsStr="${joined%,}"
 
-    # Set the format of the event record, timestamp and pipe the events.
+    # Set the format of the event record, timestamp, and pipe the events.
     sudo inotifywait -rmqs --format "%T %e %w%f" --timefmt "%Y-%m-%dT%H:%M:%S%z" -e ${eventsStr} ${path_to_watch} | while read -r line; do
       for script in "${scripts[@]}"; do
         read -r timestamp events_fired event_path <<< "$line"
 
-        command="${HANDLERS_DIR}/${script} --timestamp ${timestamp} --events ${events_fired,,} --path ${event_path}"
-        $command &
+        # Invoking the handler scripts will also generate filesystem events, so filter those out
+        if [[ $event_path != "$SCRIPT_DIR"* ]]; then
+          command="${HANDLERS_DIR}/${script} --timestamp ${timestamp} --events ${events_fired,,} --path ${event_path}"
+          $command &
+        fi
         done
       done &
   done < "$CONF_FILE"
