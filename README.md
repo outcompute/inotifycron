@@ -1,9 +1,11 @@
 # inotifycron
 Setup watchers on filesystem paths, and execute custom scripts on the caught events. Uses inotifywait.
 
+## Dependencies
+You will need inotify-tools for this. Install it with `sudo yum install inotify-tools -y`, `sudo apt-get -y install inotify-tools`, or a platform-specific command.
 
 ## Quick Start
-Go to the directory where you download the repository, and execute `chmod +x watch.sh && chmod +x handlers/*.sh` to make the scripts executable. Then you can run `./watch.sh start` and tail the file at `/tmp/testoutput.log` to see a log of events. The next step would be configure the `watch.sh` as a service, and then set up your custom configuration in `watches.conf`.
+Go to the directory where you download the repository, and execute `chmod +x watch.sh && chmod +x handlers/*.sh` to make the scripts executable. Then you can run `./watch.sh start` and tail the file at `/tmp/testoutput.log` to see a log of events. The next step would be to configure the `watch.sh` as a service, and then set up your custom configuration in `watches.conf`.
 
 
 ## Architecture
@@ -27,7 +29,7 @@ The handler scripts are invoked in the following format
 
     <handler.sh> --timestamp <Event timestamp> --events <Comma-separated list of filesystem events in a single event> --path <Filesystem path for which this event was raised>
 
-An example for an invocation would be
+An example of an invocation would be
 
     handler1.sh --timestamp 2023-11-01T08:07:07+0000 --events open,isdir --path /tmp/
 
@@ -38,7 +40,7 @@ All handler scripts need to be located within the `handlers` directory alongside
 This is the script that parses the configuration file, sets up the watchers, and can also stop the watchers. It supports three commands, namely: start, stop, and config-check.
 You can supply a command to the script as the first and only argument, such as `./watch.sh config-check`, `./watch.sh start` or `./watch.sh stop`.
 - **config-check**  
-Checks the configuration files for configuration errors. Note that it does not check for the existence of the filesystem path which needs to be watched. This command only checks for the events configured and the existence of the handler scripts that have been configured. It generates an output in the following format:
+Check the configuration files for configuration errors. Note that it does not check for the existence of the filesystem path which needs to be watched. This command only checks for the events configured and the existence of the handler scripts that have been configured. It generates an output in the following format:
     ```
     Configuration check:
     ├ Checking: /tmp/ access,modify,attrib,close_write,close_nowrite,close,open,moved_to,moved_from,move,move_self,create,delete,delete_self,unmount handler1.sh
@@ -47,13 +49,13 @@ Checks the configuration files for configuration errors. Note that it does not c
     └ Config file OK.
     ```
 - **start**  
-This will start all the watchers. Note that this step also does a configuration check (checks that are part of the config-check command described above) and will only proceed to start if all the lines are ok. After starting all the watchers, the script will wait for the processes to finish. This is so that the service file can report back the status once it starts the service through this script.
+This will start all the watchers. Note that this step also does a configuration check (checks that are part of the config-check command described above) and will only proceed to start if all the lines are okay. After starting all the watchers, the script will wait for the processes to finish. This is so that the service file can report back the status once it starts the service through this script.
 - **stop**  
 This will kill any inotifywait process on the system.
 
 
 ## Systemd Service
-This utility is best used as a systemd service so that it can keep watching the files and its status can be monitored through operating system provided interfaces. To that extent, a .service file has also been provided. To start using it, do the following:
+This utility is best used as a systemd service so that it can keep watching the files and its status can be monitored through operating system-provided interfaces. To that extent, a .service file has also been provided. To start using it, do the following:
 1. Copy the contents of this repository to a directory
 2. Copy the location of the directory and update it in the .service file, specifically for the `ExecStart`, `ExecStop`, and `WorkingDirectory` fields.
 3. Configure the `User` to the user you want to use for the watch.sh script, eg. ec2-user, ubuntu, etc. Note that all watchers and handlers will be running under this user. If you omit this, then the processes will run as root and you should be doing this with care.
@@ -69,8 +71,8 @@ Once the above is done, you can use systemctl commands such as
 
 ## Typical Use Cases & Recommendations
 This can be used to set up monitors on specific filesystem paths, and quickly trigger certain actions. A few examples can be
-- Upload a file to a remote destination whenever they become available at a specific directory. Watch for `close_write,close` events for this.
-- Send an email whenever a file with the json for the email arrives at a specific directory.
+- Upload a file to a remote destination whenever it becomes available in a specific directory. Watch for `close_write,close` events for this.
+- Send an email whenever a file with the JSON for the email arrives at a specific directory.
 - Fix the SSH key privileges in ~/.ssh/ directories.
 
 While inotifywait supports around 15 events, it is recommended that you run the script with a few custom events to see what kind of events you want to watch for. It would be also helpful to go through the [man page of inotifywait](https://man7.org/linux/man-pages/man1/inotifywait.1.html) which explains what the different events are.
@@ -79,4 +81,4 @@ While inotifywait supports around 15 events, it is recommended that you run the 
 ## Things To Note
 1. This utility uses [Linux pipes](https://man7.org/linux/man-pages/man7/pipe.7.html) to send the events up to the handlers. If the handlers do not consume events at the same, or better, speeds then this will hit the Linux pipe buffer size. You might need to increase the pipe buffer size to handle such scenarios.
 2. This utility sets up watches in recursive mode, which means it will watch all paths under the paths mentioned in `watches.conf`. Be careful as you set this up to watch huge directories.
-3. The number of watches that can be set up simultaneously is limited by a [few factors](https://www.baeldung.com/linux/inotify-upper-limit-reached), such as available memory and a few system configuration parameters. Make sure you are either operating under these limits, or tune them to your need.
+3. The number of watches that can be set up simultaneously is limited by a [few factors](https://www.baeldung.com/linux/inotify-upper-limit-reached), such as available memory and a few system configuration parameters. Make sure you are either operating under these limits or tuning them to your needs.
