@@ -52,7 +52,8 @@ This will kill any inotifywait process on the system.
 This utility is best used as a systemd service so that it can keep watching the files and its status can be monitored through operating system provided interfaces. To that extent, a .service file has also been provided. To start using it, do the following:
 1. Copy the contents of this repository to a directory
 2. Copy the location of the directory and update it in the .service file, specifically for the `ExecStart`, `ExecStop`, and `WorkingDirectory` fields.
-3. Copy the .service file with `sudo cp inotifycron.service /etc/systemd/system/`
+3. Configure the `User` to the user you want to use for the watch.sh script, eg. ec2-user, ubuntu, etc. Note that all watchers and handlers will be running under this user. If you omit this, then the processes will run as root and you should be doing this with care.
+4. Copy the .service file with `sudo cp inotifycron.service /etc/systemd/system/`
 Once the above is done, you can use systemctl commands such as
     ```
     systemctl enable inotifycron # Have the service start as the operating system boots up
