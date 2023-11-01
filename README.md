@@ -9,6 +9,10 @@ This solution uses [inotifywait](https://man7.org/linux/man-pages/man1/inotifywa
 ## Syntax
 There are two places that expect things in a specific order: The configuration file (`watches.conf`) and the handlers.
 
+
+## Quick Start
+Go to the directory where you download the repository, and execute `./watch.sh start` and then you can tail the file at `/tmp/testoutput.log` to see a log of events. The next step would be configure the `watch.sh` as a service, and then set up your custom configuration in `watches.conf`.
+
 ### watches.conf
 This file specifies the filesystem paths to watch. Each line is a space-separated record formatted in the following format
 
