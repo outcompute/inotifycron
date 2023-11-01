@@ -3,7 +3,7 @@ Setup watchers on filesystem paths, and execute custom scripts on the caught eve
 
 
 ## Quick Start
-Go to the directory where you download the repository, and execute `./watch.sh start` and then you can tail the file at `/tmp/testoutput.log` to see a log of events. The next step would be configure the `watch.sh` as a service, and then set up your custom configuration in `watches.conf`.
+Go to the directory where you download the repository, and execute `chmod +x watch.sh && chmod +x handlers/*.sh` to make the scripts executable. Then you can run `./watch.sh start` and tail the file at `/tmp/testoutput.log` to see a log of events. The next step would be configure the `watch.sh` as a service, and then set up your custom configuration in `watches.conf`.
 
 
 ## Architecture
