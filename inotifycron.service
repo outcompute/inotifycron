@@ -1,0 +1,14 @@
+[Unit]
+Description=Setup watchers on filesystem paths, and execute custom scripts on the caught events.
+
+[Service]
+Type=simple
+ExecStart=<Directory path to where this repository is copied>/watch.sh start
+ExecStop=<Directory path to where this repository is copied>/watch.sh stop
+
+Restart=always
+User=<Username to configure>
+WorkingDirectory=<Directory path to where this repository is copied>
+
+[Install]
+WantedBy=multi-user.target
